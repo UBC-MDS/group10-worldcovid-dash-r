@@ -1,0 +1,98 @@
+library(dash)
+
+#' Get COVID-19 data as data frame
+#'
+#' Retrieve covid data in pandas dataframe format witg tge time periods provided
+#'
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' get_data()
+get_data <- function() {
+  url <- "https://covid.ourworldindata.org/data/owid-covid-data.csv"
+  
+  tryCatch(
+    {
+      df <- readr::read_csv(url)
+    },
+    error = function(e) {
+      stop("The link to the data is broken.")
+    }
+  )
+  
+  columns <- c(
+    "iso_code",
+    "continent",
+    "location",
+    "date",
+    "total_cases",
+    "new_cases",
+    "total_deaths",
+    "new_deaths",
+    "total_cases_per_million",
+    "new_cases_per_million",
+    "total_deaths_per_million",
+    "new_deaths_per_million",
+    "icu_patients",
+    "icu_patients_per_million",
+    "hosp_patients",
+    "hosp_patients_per_million",
+    "weekly_icu_admissions",
+    "weekly_icu_admissions_per_million",
+    "weekly_hosp_admissions",
+    "weekly_hosp_admissions_per_million",
+    "total_vaccinations",
+    "people_vaccinated",
+    "people_fully_vaccinated",
+    "new_vaccinations",
+    "population"
+  )
+  
+  df <- df %>% dplyr::select(all_of(columns))
+  df <- dplyr::filter(df, !stringr::str_detect(iso_code, "^OWID"))
+}
+
+#' Get COVID-19 data as data frame
+#'
+#' Retrieve covid data in pandas dataframe format witg tge time periods provided
+#'
+#' @param date_from Start date of the data range with format like '2021-10-31'.
+#' @param date_to End date of data range with format like '2021-10-31'.
+#' @param countries Charactor vector of target country names. By default it retrieves all countries
+#' 
+#' @return data.frame
+#' @export
+#'
+#' @examples
+#' get_data(date_from="2022-01-01", date_to="2022-01-07", location=c("Canada", "United State"))
+filter_data <- function(df, date_from, date_to, countries) {
+  
+  if (missing(date_from)) {
+    date_from <- df$date |> min()
+  }
+  
+  if (missing(date_to)) {
+    date_to <- df$date |> max()
+  }
+  
+  df <- df %>%
+    dplyr::filter(date >= date_from, date <= date_to)  
+  
+  if (!missing(countries)) {
+    df <- df %>% 
+      dplyr::filter(location %in% countries)
+  }
+  
+  df
+  
+}
+
+app = Dash$new()
+
+df <- get_data()
+filter_data <- filter_data(df, date_from='2022-02-01', countries=c('Canada', 'United States', 'Germany'))
+
+app$layout(div(df$iso_code[1]))
+
+app$run_server(host = '0.0.0.0')
