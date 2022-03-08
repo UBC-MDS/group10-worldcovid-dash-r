@@ -69,11 +69,11 @@ get_data <- function() {
 filter_data <- function(df, date_from, date_to, countries) {
   
   if (missing(date_from)) {
-    date_from <- df$date |> min()
+    date_from <- df$date %>% min()
   }
   
   if (missing(date_to)) {
-    date_to <- df$date |> max()
+    date_to <- df$date %>% max()
   }
   
   df <- df %>%
