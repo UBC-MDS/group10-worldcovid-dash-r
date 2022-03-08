@@ -3,6 +3,9 @@ library(dashHtmlComponents)
 library(ggplot2)
 library(plotly)
 library(purrr)
+library(dplyr)
+library(readr)
+library(stringr)
 
 #' Get COVID-19 data as data frame
 #'
@@ -53,9 +56,11 @@ get_data <- function() {
     "population"
   )
   
-  df <- df %>% dplyr::select(all_of(columns))
-  df <- dplyr::filter(df, !stringr::str_detect(iso_code, "^OWID"))
+  df <- df %>% select(all_of(columns))
+  df <- filter(df, !str_detect(iso_code, "^OWID"))
   df <- df %>% replace(is.na(.), 0)
+  
+  df
 }
 
 #' Get COVID-19 data as data frame
@@ -81,11 +86,11 @@ filter_data <- function(df, date_from, date_to, countries) {
   }
   
   df <- df %>%
-    dplyr::filter(date >= date_from, date <= date_to)
+    filter(date >= date_from, date <= date_to)
   
   if (!missing(countries)) {
     df <- df %>%
-      dplyr::filter(location %in% countries)
+      filter(location %in% countries)
   }
   
   df
@@ -127,10 +132,13 @@ feature_dropdown = dccDropdown(
 )
 
 # Country selector
+country <- df["location"] %>% unique() %>%
+  unlist(use.names = FALSE)
+
 country_selector <- dccDropdown(
   id = "country-selector",
   multi = TRUE,
-  options = df$location %>% unique() %>% purrr::map(function(col) list(label = col, value = col)),
+  options = country %>% purrr::map(function(col) list(label = col, value = col)),
   value=c("Canada", "United States", "United Kingdom", "France", "Singapore"),
 )
 
