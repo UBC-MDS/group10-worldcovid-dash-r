@@ -21,7 +21,7 @@ get_data <- function() {
   
   tryCatch(
     {
-      df <- readr::read_csv(url)
+      df <- read_csv(url)
     },
     error = function(e) {
       stop("The link to the data is broken.")
