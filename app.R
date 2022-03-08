@@ -91,7 +91,7 @@ filter_data <- function(df, date_from, date_to, countries) {
 app = Dash$new()
 
 df <- get_data()
-filter_data <- filter_data(df, date_from='2022-02-01', countries=c('Canada', 'United States', 'Germany'))
+filter_df <- filter_data(df, date_from='2022-02-01', countries=c('Canada', 'United States', 'Germany'))
 
 app$layout(div(df$iso_code[1]))
 
