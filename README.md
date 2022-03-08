@@ -1,4 +1,4 @@
-# World COVID-19 Dashboard (Python)
+# World COVID-19 Dashboard (R)
 
 ## Welcome :microbe: :earth_asia:
 
