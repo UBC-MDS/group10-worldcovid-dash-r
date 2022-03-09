@@ -4,7 +4,7 @@
 
 Thank you for visitng the World COVID-19 Dashboard app project repository.
 
-Link to our app here: [World COVID-19 Dashboard-R](xxxxx)
+Link to our app here: [World COVID-19 Dashboard-R](https://worldcovid-dashr.herokuapp.com/)
 
 ## The Problem
 
@@ -34,11 +34,6 @@ Global COVID-19 Plot:
 
 Vaccination and Hospitalization:
 - This tab aims to give a sense of the movement of vaccination rates and hospitalizations, and how that differed between nations throughout the pandemic. It consists of four line charts; "Total Vaccinations", "New Vaccinations", "Current ICU", and "Current Hospitalizations". Similar to the first tab, the charts are filtered by the "Country Filter" to select which countries are showcased, and the "Date range" slider at the top of the screen that limits or expands the visualized timeline. The data type can be shown as either linear or log using the "Data Scale" radio buttons to suit the curiosity of the user.
-
-## Usage
-- Per the GIF below, our app is meant to be highly filterable and interactive and can be used multiple ways to suit the data needs of policy makers, public health communicators, and regular folks alike in the best way they see fit for the impacts they want to understand or the message they want to convey.
-
-![](images/Usage.gif)
 
 ## The Data
 The complete COVID-19 dataset used in our dashboard can be downloaded in [CSV](https://covid.ourworldindata.org/data/owid-covid-data.csv) | [XLSX](https://covid.ourworldindata.org/data/owid-covid-data.xlsx) | [JSON](https://covid.ourworldindata.org/data/owid-covid-data.json) and this is a collection of the COVID-19 data maintained by [_Our World in Data_](https://ourworldindata.org/coronavirus).
