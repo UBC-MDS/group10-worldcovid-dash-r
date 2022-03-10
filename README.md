@@ -1,8 +1,8 @@
-# World COVID-19 Dashboard (Python)
+# World COVID-19 Dashboard (R)
 
 ## Welcome :microbe: :earth_asia:
 
-Thank you for visitng the World COVID-19 Dashboard app project repository.
+Thank you for visitng the World COVID-19 Dashboard app project repository. Link to our app here: [World COVID-19 Dashboard-R](https://worldcovid-dashr.herokuapp.com/)
 
 ### Run the app locally
 
