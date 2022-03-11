@@ -304,7 +304,6 @@ app$layout(
                 htmlBr(),
                 htmlP(" "),
                 htmlB("date_slider"),
-                date_slider,
                 htmlBr(),
                 htmlBr(),
                 htmlP(" "),
@@ -378,8 +377,13 @@ app$callback(
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>' 
     ))
+
+
+  filter_df$rolling_fully_vac<-ave(filter_df$people_fully_vaccinated,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
+
+  #filter_df <-  head(filter_df, -5)
     
-    chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
+    chart_1 <- ggplot(filter_df, aes(y = rolling_fully_vac, x = date, color = location)) +
                 geom_line(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
@@ -402,8 +406,11 @@ app$callback(
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>' 
     ))
+
+      filter_df$rolling_new_vac<-ave(filter_df$new_vaccinations,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+
     
-    chart_2 <- ggplot(filter_df, aes(y = new_vaccinations, x = date, color = location)) +
+    chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
                 geom_line(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
