@@ -99,9 +99,6 @@ filter_data <- function(df, date_from, date_to, countries) {
 df <- get_data()
 
 
-
-
-
 # Feature dropdown functions
 feature_labels <- c("Total confirmed cases",
                     "Total confirmed cases per million people",
@@ -157,7 +154,6 @@ scale_line_radio = dbcRadioItems(
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
   value="identity",
 )
-
 
 
 # Tabs and sidebars
@@ -272,16 +268,46 @@ charts_tab = dbcCol(list(
                     )
                   
               )
+            ),
+              dbcRow(list( 
+                    dbcCol(list(
+                            htmlP(
+                                "Current ICU Hospitalizations",
+                                list("font-size" = "25px")
+                            ),
+                            htmlP(
+                                "Shows the current number of people per million admitted to the ICU for the selected countries, over the date range selected by the slider above."
+                            ),
+                            dccLoading(
+                                dccGraph(
+                                    id="chart_3"
+                                )
+                        
+                              )
+                    ), width = 6),
+                    dbcCol(list(
+                        
+                            htmlP(
+                                "Current Hospitalizations",
+                                list("font-size" = "25px"),
+                            ),
+                            htmlP(
+                                "Shows the current number of people per million admitted to the hospital for the selected countries, over the date range selected by the slider above."
+                            ),
+                            dccLoading(
+                                dccGraph(
+                                    id="chart_4"
+                                )
+                            )
+                      
+                        ), width = 6
+                    )
+                  
+              )
             )
   )
 
 )
-
-
-
-
-
-
 
 
 
@@ -416,6 +442,64 @@ app$callback(
     chart_2 <- ggplotly(chart_2)
   }
 )
+
+
+
+app$callback(
+  output('chart_3', 'figure'),
+  list(input('country-selector', 'value'),
+            input('scale-line-radio', 'value')),
+
+  function(countries, scale_type) {
+    max_date <- df$date %>% max()
+    min_date <- df$date %>% min()
+    
+    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
+    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
+                                             "Location: ", location, '<br>' 
+    ))
+
+    filter_df$rolling_icu<-ave(filter_df$icu_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+
+    
+    chart_3 <- ggplot(filter_df, aes(y = rolling_icu, x = date, color = location)) +
+                geom_line(stat = 'summary', fun = mean) +
+                scale_y_continuous(trans = scale_type) +
+                theme_bw()
+
+    chart_3 <- ggplotly(chart_3)
+  }
+)
+
+
+app$callback(
+  output('chart_4', 'figure'),
+  list(input('country-selector', 'value'),
+            input('scale-line-radio', 'value')),
+
+  function(countries, scale_type) {
+    max_date <- df$date %>% max()
+    min_date <- df$date %>% min()
+    
+    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
+    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
+                                             "Location: ", location, '<br>' 
+    ))
+
+    filter_df$rolling_hosp<-ave(filter_df$hosp_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+
+    
+    chart_4 <- ggplot(filter_df, aes(y = rolling_hosp, x = date, color = location)) +
+                geom_line(stat = 'summary', fun = mean) +
+                scale_y_continuous(trans = scale_type) +
+                theme_bw()
+
+    chart_4 <- ggplotly(chart_4)
+  }
+)
+
+
+
 
 
 app$run_server(host = "0.0.0.0") #host = "0.0.0.0", debug = T
