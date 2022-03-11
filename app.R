@@ -380,10 +380,8 @@ app$callback(
 
 
   filter_df$rolling_fully_vac<-ave(filter_df$people_fully_vaccinated,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
-
-  #filter_df <-  head(filter_df, -5)
     
-    chart_1 <- ggplot(filter_df, aes(y = rolling_fully_vac, x = date, color = location)) +
+  chart_1 <- ggplot(filter_df, aes(y = rolling_fully_vac, x = date, color = location)) +
                 geom_line(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
@@ -420,8 +418,4 @@ app$callback(
 )
 
 
-
-
-
-
-app$run_server(debug = T) #host = "0.0.0.0"
+app$run_server(host = "0.0.0.0") #host = "0.0.0.0", debug = T
