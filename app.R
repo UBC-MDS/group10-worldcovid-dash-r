@@ -98,6 +98,10 @@ filter_data <- function(df, date_from, date_to, countries) {
 
 df <- get_data()
 
+
+
+
+
 # Feature dropdown functions
 feature_labels <- c("Total confirmed cases",
                     "Total confirmed cases per million people",
@@ -142,6 +146,20 @@ country_selector <- dccDropdown(
   value=c("Canada", "United States", "United Kingdom", "France", "Singapore"),
 )
 
+#Linear/Log Selector
+data_type_mapping <- function(label, value) {
+  list(label = label, value = value)
+}
+data_type_labels <- c("Linear", "Log")
+data_type_values <- c("identity", "log")
+scale_line_radio = dbcRadioItems(
+  id = "scale-line-radio",
+  options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
+  value="identity",
+)
+
+
+
 # Tabs and sidebars
 sidebar <- dbcCol(dbcRow(
   list(
@@ -183,14 +201,14 @@ map_tab <- dbcRow(
     htmlP(" "),
     htmlP(
       "World Map",
-      style = list("font-size" = "25px"),
+      style = list("font-size" = "25px")
     ),
     htmlP(
       "The map below depicts the selected COVID-19 indicator for the selected countries. Use the play button to animate the timeline of this indicator over the date range selected by the slider above.",
     ),
     htmlB("Indicator:"),
     htmlP(
-      "Select an indicator to explore on the map and line plot using the dropdown below.",
+      "Select an indicator to explore on the map and line plot using the dropdown below."
     ),
     htmlBr(),
     htmlBr(),
@@ -198,11 +216,74 @@ map_tab <- dbcRow(
     dccLoading(
       dccGraph(
         id = "map-plot",
-        style = list("height" = "70vh"),
+        style = list("height" = "70vh")
       )
     )
   )
 )
+
+# Charts Tab
+charts_tab = dbcCol(list(
+            dbcRow(list(
+                    htmlP(" "),
+                    htmlB("Data Scale:"),
+                    htmlP(
+                        "Use the radio buttons below to change the data in the visualizations to a linear or log scale."
+                    ),
+                    htmlBr(),
+                    scale_line_radio,
+                    htmlP(" "),
+                    htmlBr(),
+                    htmlBr()
+                    )
+              ),
+              dbcRow(list( 
+                    dbcCol(list(
+                            htmlP(
+                                "Total Vaccinations",
+                                list("font-size" = "25px")
+                            ),
+                            htmlP(
+                                "Shows the total number of people vaccinated for the selected countries, over the date range selected by the slider above."
+                            ),
+                            dccLoading(
+                                dccGraph(
+                                    id="chart_1"
+                                )
+                        
+                              )
+                    ), width = 6),
+                    dbcCol(list(
+                        
+                            htmlP(
+                                "New Vaccinations",
+                                list("font-size" = "25px"),
+                            ),
+                            htmlP(
+                                "Shows the number of people newly vaccinated for the selected countries, over the date range selected by the slider above."
+                            ),
+                            dccLoading(
+                                dccGraph(
+                                    id="chart_2"
+                                )
+                            )
+                      
+                        ), width = 6
+                    )
+                  
+              )
+            )
+  )
+
+)
+
+
+
+
+
+
+
+
 
 
 # APP codes
@@ -223,6 +304,7 @@ app$layout(
                 htmlBr(),
                 htmlP(" "),
                 htmlB("date_slider"),
+                date_slider,
                 htmlBr(),
                 htmlBr(),
                 htmlP(" "),
@@ -238,6 +320,7 @@ app$layout(
                       tab_id="line-tab"
                     ),
                     dbcTab( 
+                      charts_tab,
                       label="Vaccination and Hospitalization Indicators",
                       tab_id="charts-tab"
                     )
@@ -253,6 +336,8 @@ app$layout(
     fluid=TRUE
   )
 )
+
+
 
 app$callback(
   output('map-plot', 'figure'),
@@ -280,4 +365,56 @@ app$callback(
   }
 )
 
-app$run_server(host = "0.0.0.0")
+
+app$callback(
+  output('chart_1', 'figure'),
+  list(input('country-selector', 'value'), 
+            input('scale-line-radio', 'value')),
+  function(countries, scale_type) {
+    max_date <- df$date %>% max()
+    min_date <- df$date %>% min()
+    
+    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
+    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
+                                             "Location: ", location, '<br>' 
+    ))
+    
+    chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
+                geom_line(stat = 'summary', fun = mean) +
+                scale_y_continuous(trans = scale_type) +
+                theme_bw()
+    
+    chart_1 <- ggplotly(chart_1)
+  }
+)
+
+
+app$callback(
+  output('chart_2', 'figure'),
+  list(input('country-selector', 'value'),
+            input('scale-line-radio', 'value')),
+
+  function(countries, scale_type) {
+    max_date <- df$date %>% max()
+    min_date <- df$date %>% min()
+    
+    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
+    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
+                                             "Location: ", location, '<br>' 
+    ))
+    
+    chart_2 <- ggplot(filter_df, aes(y = new_vaccinations, x = date, color = location)) +
+                geom_line(stat = 'summary', fun = mean) +
+                scale_y_continuous(trans = scale_type) +
+                theme_bw()
+
+    chart_2 <- ggplotly(chart_2)
+  }
+)
+
+
+
+
+
+
+app$run_server(debug = T) #host = "0.0.0.0"
