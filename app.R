@@ -6,6 +6,7 @@ library(purrr)
 library(dplyr)
 library(readr)
 library(stringr)
+library(RcppRoll)
 
 #' Get COVID-19 data as data frame
 #'
@@ -405,10 +406,10 @@ app$callback(
     ))
 
 
-  filter_df$rolling_fully_vac<-ave(filter_df$people_fully_vaccinated,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
+  #filter_df$rolling_fully_vac<-ave(filter_df$people_fully_vaccinated,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
     
-  chart_1 <- ggplot(filter_df, aes(y = rolling_fully_vac, x = date, color = location)) +
-                geom_line(stat = 'summary', fun = mean) +
+  chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
+                geom_smooth(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
     
@@ -431,11 +432,13 @@ app$callback(
                                              "Location: ", location, '<br>' 
     ))
 
-      filter_df$rolling_new_vac<-ave(filter_df$new_vaccinations,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+    #filter_df$rolling_new_vac<-ave(filter_df$new_vaccinations,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
+
+    filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
 
     
     chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
-                geom_line(stat = 'summary', fun = mean) +
+                geom_smooth(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
 
@@ -459,11 +462,11 @@ app$callback(
                                              "Location: ", location, '<br>' 
     ))
 
-    filter_df$rolling_icu<-ave(filter_df$icu_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+    #filter_df$rolling_icu<-ave(filter_df$icu_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
 
     
-    chart_3 <- ggplot(filter_df, aes(y = rolling_icu, x = date, color = location)) +
-                geom_line(stat = 'summary', fun = mean) +
+    chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
+                geom_smooth(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
 
@@ -486,11 +489,11 @@ app$callback(
                                              "Location: ", location, '<br>' 
     ))
 
-    filter_df$rolling_hosp<-ave(filter_df$hosp_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
+    #filter_df$rolling_hosp<-ave(filter_df$hosp_patients_per_million,rep(1:(nrow(filter_df)/3),each=3),FUN=function(x){mean(x)})
 
     
-    chart_4 <- ggplot(filter_df, aes(y = rolling_hosp, x = date, color = location)) +
-                geom_line(stat = 'summary', fun = mean) +
+    chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
+                geom_smooth(stat = 'summary', fun = mean) +
                 scale_y_continuous(trans = scale_type) +
                 theme_bw()
 
