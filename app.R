@@ -212,7 +212,7 @@ marks_display[last_index_char] <- list(
 )
 
 date_slider <- dccRangeSlider(
-  id = "date-slider",
+  id = "date_slider",
   min=daterange[1],
   max=daterange[length(daterange)],
   value=list(
@@ -340,7 +340,7 @@ charts_tab = dbcCol(list(
   ),
   dbcRow(list( 
     dbcCol(list(
-      htmlP(
+      htmlB(
         "Total Vaccinations",
         list("font-size" = "25px")
       ),
@@ -356,7 +356,7 @@ charts_tab = dbcCol(list(
     ), width = 6),
     dbcCol(list(
       
-      htmlP(
+      htmlB(
         "New Vaccinations",
         list("font-size" = "25px"),
       ),
@@ -376,7 +376,7 @@ charts_tab = dbcCol(list(
   ),
   dbcRow(list( 
     dbcCol(list(
-      htmlP(
+      htmlB(
         "Current ICU Hospitalizations",
         list("font-size" = "25px")
       ),
@@ -392,7 +392,7 @@ charts_tab = dbcCol(list(
     ), width = 6),
     dbcCol(list(
       
-      htmlP(
+      htmlB(
         "Current Hospitalizations",
         list("font-size" = "25px"),
       ),
@@ -469,7 +469,7 @@ app$layout(
 #Date display callback
 app$callback(
   output('date-display', 'children'),
-  list(input('date-slider', 'value')),
+  list(input('date_slider', 'value')),
   function(value) {
     
     min_date_index <- value[[1]] %>% as.integer()
@@ -487,7 +487,7 @@ app$callback(
   output('map-plot', 'figure'),
   list(input('feature-dropdown', 'value'),
        input('country-selector', 'value'),
-       input('date-slider', 'value')),
+       input('date_slider', 'value')),
   function(xcol, countries, daterange) {
     
     max_date_index <- daterange[[2]] %>% as.integer()
@@ -517,12 +517,18 @@ app$callback(
   output('line-plot', 'figure'),
   list(input('feature-dropdown2', 'value'),
        input('country-selector', 'value'),
-       input('scale-line-radio2', 'value')
-  ),
-  function(ycol, countries, scale_type) {
-    #  max_date <- df$date %>% max()
-    # min_date <- df$date %>% min()
-    filter_df <- filter_data(df, countries=countries)
+       input('scale-line-radio2', 'value'),
+       input('date_slider', 'value')),
+  
+  function(ycol, countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
+    filter_df <- filter_data(df,
+                             date_from = min_date,
+                             date_to = max_date,
+                             countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>' 
     ))
@@ -543,10 +549,14 @@ app$callback(
 app$callback(
   output('chart_1', 'figure'),
   list(input('country-selector', 'value'), 
-       input('scale-line-radio', 'value')),
-  function(countries, scale_type) {
-    max_date <- df$date %>% max()
-    min_date <- df$date %>% min()
+       input('scale-line-radio', 'value'),
+       input('date_slider', 'value')),
+  
+  function(countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
     
     filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
@@ -567,11 +577,14 @@ app$callback(
 app$callback(
   output('chart_2', 'figure'),
   list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value')),
+       input('scale-line-radio', 'value'),
+       input('date_slider', 'value')),
   
-  function(countries, scale_type) {
-    max_date <- df$date %>% max()
-    min_date <- df$date %>% min()
+  function(countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
     
     filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
@@ -597,11 +610,14 @@ app$callback(
 app$callback(
   output('chart_3', 'figure'),
   list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value')),
+       input('scale-line-radio', 'value'),
+       input('date_slider', 'value')),
   
-  function(countries, scale_type) {
-    max_date <- df$date %>% max()
-    min_date <- df$date %>% min()
+  function(countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
     
     filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
@@ -622,11 +638,14 @@ app$callback(
 app$callback(
   output('chart_4', 'figure'),
   list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value')),
+       input('scale-line-radio', 'value'),
+       input('date_slider', 'value')),
   
-  function(countries, scale_type) {
-    max_date <- df$date %>% max()
-    min_date <- df$date %>% min()
+  function(countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
     
     filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
