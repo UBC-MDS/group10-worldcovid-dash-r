@@ -173,7 +173,7 @@ scale_line_radio2 = dbcRadioItems(
 )
 
 # Date slider
-date_unique <- unique(df["date"]) |> arrange(date)
+date_unique <- unique(df["date"]) %>% arrange(date)
 daterange <- 1:nrow(date_unique)
 month_index <- ceiling_date(seq(date_unique$date[[1]], date_unique$date[[800]], by="months"), "month") - days(1)
 marks <- list(date_unique[[1,1]])
@@ -472,8 +472,8 @@ app$callback(
   list(input('date-slider', 'value')),
   function(value) {
     
-    min_date_index <- value[[1]] |> as.integer()
-    max_date_index <- value[[2]] |> as.integer()
+    min_date_index <- value[[1]] %>% as.integer()
+    max_date_index <- value[[2]] %>% as.integer()
     
     template <- "Date range: "
     output_string <- paste0(template, marks[[min_date_index]], " to ", marks[[max_date_index]])
@@ -490,8 +490,8 @@ app$callback(
        input('date-slider', 'value')),
   function(xcol, countries, daterange) {
     
-    max_date_index <- daterange[[2]] |> as.integer()
-    max_date <- marks[[max_date_index]] |> as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()
     filter_df <- filter_data(df, date_from = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>' 
