@@ -221,7 +221,6 @@ date_slider <- dccRangeSlider(
   marks = marks_display
 )
 
-
 # Tabs and sidebars
 sidebar <- dbcCol(dbcRow(
   list(
@@ -625,6 +624,7 @@ app$callback(
     chart_4 <- ggplotly(chart_4)
   }
 )
+
 
 
 app$run_server(host = "0.0.0.0")
