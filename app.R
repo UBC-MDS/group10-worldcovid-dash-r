@@ -7,6 +7,7 @@ library(dplyr)
 library(readr)
 library(stringr)
 library(RcppRoll)
+library(lubridate)
 
 #' Get COVID-19 data as data frame
 #'
@@ -170,6 +171,57 @@ scale_line_radio2 = dbcRadioItems(
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
   value="identity",
 )
+
+# Date slider
+date_unique <- unique(df["date"]) |> arrange(date)
+daterange <- 1:nrow(date_unique)
+month_index <- ceiling_date(seq(date_unique$date[[1]], date_unique$date[[800]], by="months"), "month") - days(1)
+marks <- list(date_unique[[1,1]])
+
+for (i in 2:nrow(date_unique)) {
+  date_value <- list(date_unique[[i,1]])
+  marks <- append(marks, date_value)
+}
+
+marks_display <- list()
+
+marks_display["1"] <- list(
+  list("label" = format(marks[[1]], format="%y/%m"),
+       "style" = list("color" = "#77b0b1")
+  )
+)
+
+last_index <- length(marks)
+
+for (i in 2:last_index) {
+  if (marks[[i]] %in% month_index & last_index - i > 31 & i - 0 > 31) {
+    index <- as.character(i)
+    marks_display[index] <- list(list("label" = format(marks[[i]], format="%y/%m"),
+                                      "style" = list("color" = "#77b0b1")
+    )
+    )
+  }
+}
+
+last_index_char <- as.character(last_index)
+
+marks_display[last_index_char] <- list(
+  list("label" = format(marks[[last_index]], format="%y/%m"),
+       "style" = list("color" = "#77b0b1")
+  )
+)
+
+date_slider <- dccRangeSlider(
+  id = "date-slider",
+  min=daterange[1],
+  max=daterange[length(daterange)],
+  value=list(
+    daterange[1],
+    daterange[length(daterange)]
+  ),
+  marks = marks_display
+)
+
 
 # Tabs and sidebars
 sidebar <- dbcCol(dbcRow(
@@ -376,11 +428,11 @@ app$layout(
             dbcRow(
               list(
                 htmlP(" "),
-                htmlB("date_display"),
+                htmlB(id = "date-display"),
                 htmlBr(),
                 htmlBr(),
                 htmlP(" "),
-                htmlB("date_slider"),
+                date_slider,
                 htmlBr(),
                 htmlBr(),
                 htmlP(" "),
@@ -414,14 +466,32 @@ app$layout(
   )
 )
 
+#Date display callback
+app$callback(
+  output('date-display', 'children'),
+  list(input('date-slider', 'value')),
+  function(value) {
+    
+    min_date_index <- value[[1]] |> as.integer()
+    max_date_index <- value[[2]] |> as.integer()
+    
+    template <- "Date range: "
+    output_string <- paste0(template, marks[[min_date_index]], " to ", marks[[max_date_index]])
+    output_string
+  }  
+  
+)
 
 #Map call-back
 app$callback(
   output('map-plot', 'figure'),
   list(input('feature-dropdown', 'value'),
-       input('country-selector', 'value')),
-  function(xcol, countries) {
-    max_date <- df$date %>% max()
+       input('country-selector', 'value'),
+       input('date-slider', 'value')),
+  function(xcol, countries, daterange) {
+    
+    max_date_index <- daterange[[2]] |> as.integer()
+    max_date <- marks[[max_date_index]] |> as.integer()
     filter_df <- filter_data(df, date_from = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>' 
