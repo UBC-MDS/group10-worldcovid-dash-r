@@ -538,7 +538,8 @@ app$callback(
                             color = location)) +
       geom_line(stat = 'summary', fun = mean) +
       ggtitle(paste0("Country data for ", ycol)) +
-      scale_y_continuous(trans = scale_type)
+      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(labels = scales::label_number_si()) 
     
     line_plot <- line_plot %>%
       ggplotly()
@@ -565,9 +566,13 @@ app$callback(
     
     
     chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
-      geom_smooth(stat = 'summary', fun = mean) +
+      geom_line(stat = 'summary', fun = mean) +
       scale_y_continuous(trans = scale_type) +
-      theme_bw()
+      scale_y_continuous(labels = scales::label_number_si()) + 
+      ggthemes::scale_color_tableau() +
+      labs(y = 'People fully vaccinated')
+      #theme_bw()
+
     
     chart_1 <- ggplotly(chart_1)
   }
@@ -597,9 +602,12 @@ app$callback(
     
     
     chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
-      geom_smooth(stat = 'summary', fun = mean) +
+      geom_line(stat = 'summary', fun = mean) +
       scale_y_continuous(trans = scale_type) +
-      theme_bw()
+      scale_y_continuous(labels = scales::label_number_si()) + 
+      ggthemes::scale_color_tableau() +
+      labs(y = 'People newly vaccinated')
+      #theme_bw()
     
     chart_2 <- ggplotly(chart_2)
   }
@@ -626,9 +634,11 @@ app$callback(
     
     
     chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
-      geom_smooth(stat = 'summary', fun = mean) +
+      geom_line(stat = 'summary', fun = mean) +
       scale_y_continuous(trans = scale_type) +
-      theme_bw()
+      ggthemes::scale_color_tableau() +
+      labs(y = 'ICU patients per million')
+      #theme_bw()
     
     chart_3 <- ggplotly(chart_3)
   }
@@ -653,9 +663,11 @@ app$callback(
     ))
     
     chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
-      geom_smooth(stat = 'summary', fun = mean) +
+      geom_line(stat = 'summary', fun = mean) +
       scale_y_continuous(trans = scale_type) +
-      theme_bw()
+      ggthemes::scale_color_tableau() +
+      labs(y = 'Hospitalized patients per million')
+      #theme_bw()
     
     chart_4 <- ggplotly(chart_4)
   }
