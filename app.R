@@ -20,7 +20,7 @@ library(lubridate)
 #' get_data()
 get_data <- function() {
   url <- "https://covid.ourworldindata.org/data/owid-covid-data.csv"
-  
+
   tryCatch(
     {
       df <- read_csv(url)
@@ -29,7 +29,7 @@ get_data <- function() {
       stop("The link to the data is broken.")
     }
   )
-  
+
   columns <- c(
     "iso_code",
     "continent",
@@ -57,11 +57,11 @@ get_data <- function() {
     "new_vaccinations",
     "population"
   )
-  
+
   df <- df %>% select(all_of(columns))
   df <- filter(df, !str_detect(iso_code, "^OWID"))
   df <- df %>% replace(is.na(.), 0)
-  
+
   df
 }
 
@@ -82,44 +82,47 @@ filter_data <- function(df, date_from, date_to, countries) {
   if (missing(date_from)) {
     date_from <- df$date %>% min()
   }
-  
+
   if (missing(date_to)) {
     date_to <- df$date %>% max()
   }
-  
+
   df <- df %>%
     filter(date >= date_from, date <= date_to)
-  
+
   if (!missing(countries)) {
     df <- df %>%
       filter(location %in% countries)
   }
-  
+
   df
 }
 
 df <- get_data()
+df <- filter_data(df, date_from='2021-01-01')
 
 
 # Feature dropdown functions
-feature_labels <- c("Total confirmed cases",
-                    "Total confirmed cases per million people",
-                    "Daily confirmed cases",
-                    "Daily confirmed cases per million people",
-                    "Total deaths",
-                    "Total deaths per million people",
-                    "Daily deaths",
-                    "Daily deaths per million people"
+feature_labels <- c(
+  "Total confirmed cases",
+  "Total confirmed cases per million people",
+  "Daily confirmed cases",
+  "Daily confirmed cases per million people",
+  "Total deaths",
+  "Total deaths per million people",
+  "Daily deaths",
+  "Daily deaths per million people"
 )
 
-feature_values <- c("total_cases",
-                    "total_cases_per_million",
-                    "new_cases",
-                    "new_cases_per_million",
-                    "total_deaths",
-                    "total_deaths_per_million",
-                    "new_deaths",
-                    "new_deaths_per_million"
+feature_values <- c(
+  "total_cases",
+  "total_cases_per_million",
+  "new_cases",
+  "new_cases_per_million",
+  "total_deaths",
+  "total_deaths_per_million",
+  "new_deaths",
+  "new_deaths_per_million"
 )
 
 feature_mapping <- function(label, value) {
@@ -133,61 +136,61 @@ data_type_labels <- c("Linear", "Log")
 data_type_values <- c("identity", "log")
 
 # feature dropdown
-feature_dropdown = dccDropdown(
+feature_dropdown <- dccDropdown(
   id = "feature-dropdown",
   value = "total_cases_per_million",
   options = purrr::map2(feature_labels, feature_values, feature_mapping)
-  
 )
 
 # feature dropdown2
-feature_dropdown2 = dccDropdown(
+feature_dropdown2 <- dccDropdown(
   id = "feature-dropdown2",
   value = "total_cases_per_million",
   options = purrr::map2(feature_labels, feature_values, feature_mapping)
 )
 
 # Country selector
-country <- df["location"] %>% unique() %>%
+country <- df["location"] %>%
+  unique() %>%
   unlist(use.names = FALSE)
 
 country_selector <- dccDropdown(
   id = "country-selector",
   multi = TRUE,
   options = country %>% purrr::map(function(col) list(label = col, value = col)),
-  value=c("Canada", "United States", "United Kingdom", "France", "Singapore"),
+  value = c("Canada", "United States", "United Kingdom", "France", "Singapore"),
 )
 
-#Linear/Log Selector (charts)
-scale_line_radio = dbcRadioItems(
+# Linear/Log Selector (charts)
+scale_line_radio <- dbcRadioItems(
   id = "scale-line-radio",
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
-  value="identity",
+  value = "identity",
 )
 
-#Linear/Log Selector (line plot)
-scale_line_radio2 = dbcRadioItems(
+# Linear/Log Selector (line plot)
+scale_line_radio2 <- dbcRadioItems(
   id = "scale-line-radio2",
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
-  value="identity",
+  value = "identity",
 )
 
 # Date slider
 date_unique <- unique(df["date"]) %>% arrange(date)
 daterange <- 1:nrow(date_unique)
-month_index <- ceiling_date(seq(date_unique$date[[1]], date_unique$date[[800]], by="months"), "month") - days(1)
-marks <- list(date_unique[[1,1]])
+month_index <- ceiling_date(seq(date_unique$date[[1]], date_unique$date[[nrow(date_unique)]], by = "months"), "month") - days(1)
+marks <- list(date_unique[[1, 1]])
 
-for (i in 2:nrow(date_unique)) {
-  date_value <- list(date_unique[[i,1]])
-  marks <- append(marks, date_value)
+for (i in 1:nrow(date_unique)) {
+  marks[i] <- list(date_unique[[i, 1]])
 }
 
 marks_display <- list()
 
 marks_display["1"] <- list(
-  list("label" = format(marks[[1]], format="%y/%m"),
-       "style" = list("color" = "#77b0b1")
+  list(
+    "label" = format(marks[[1]], format = "%y/%m"),
+    "style" = list("color" = "#77b0b1")
   )
 )
 
@@ -196,26 +199,27 @@ last_index <- length(marks)
 for (i in 2:last_index) {
   if (marks[[i]] %in% month_index & last_index - i > 31 & i - 0 > 31) {
     index <- as.character(i)
-    marks_display[index] <- list(list("label" = format(marks[[i]], format="%y/%m"),
-                                      "style" = list("color" = "#77b0b1")
-    )
-    )
+    marks_display[index] <- list(list(
+      "label" = format(marks[[i]], format = "%y/%m"),
+      "style" = list("color" = "#77b0b1")
+    ))
   }
 }
 
 last_index_char <- as.character(last_index)
 
 marks_display[last_index_char] <- list(
-  list("label" = format(marks[[last_index]], format="%y/%m"),
-       "style" = list("color" = "#77b0b1")
+  list(
+    "label" = format(marks[[last_index]], format = "%y/%m"),
+    "style" = list("color" = "#77b0b1")
   )
 )
 
 date_slider <- dccRangeSlider(
   id = "date_slider",
-  min=daterange[1],
-  max=daterange[length(daterange)],
-  value=list(
+  min = daterange[1],
+  max = daterange[length(daterange)],
+  value = list(
     daterange[1],
     daterange[length(daterange)]
   ),
@@ -230,7 +234,8 @@ sidebar <- dbcCol(dbcRow(
     htmlP(" "),
     htmlP(" "),
     htmlH3(
-      "World COVID-19 Dashboard", style = list("font" = "Helvetica", "font-size" = "25px", "text-align" = "center")
+      "World COVID-19 Dashboard",
+      style = list("font" = "Helvetica", "font-size" = "25px", "text-align" = "center")
     ),
     htmlP(" "),
     htmlP(" "),
@@ -238,7 +243,8 @@ sidebar <- dbcCol(dbcRow(
     htmlBr(),
     htmlP(
       "Explore the global situation of COVID-19 using this interactive dashboard. Compare selected countries and indicators across different date ranges to observe the effect of policy, and vaccination rate.",
-      style = list("text-align" = "justify")),    
+      style = list("text-align" = "justify")
+    ),
     htmlHr(),
     htmlBr(),
     htmlBr(),
@@ -247,7 +253,7 @@ sidebar <- dbcCol(dbcRow(
       "Use this filter to add or remove a country from the analysis",
     ),
     htmlBr(),
-    htmlBr(),      
+    htmlBr(),
     country_selector
   )
 ),
@@ -307,9 +313,11 @@ line_tab <- dbcRow(
       " ",
     ),
     dbcCol(
-      list(htmlP(" ",),
-           htmlB("Data Scale"),
-           scale_line_radio2),
+      list(
+        htmlP(" ", ),
+        htmlB("Data Scale"),
+        scale_line_radio2
+      ),
       width = 1,
     ),
     dbcCol(
@@ -324,7 +332,7 @@ line_tab <- dbcRow(
 )
 
 # Charts Tab
-charts_tab = dbcCol(list(
+charts_tab <- dbcCol(list(
   dbcRow(list(
     htmlP(" "),
     htmlB("Data Scale:"),
@@ -336,9 +344,8 @@ charts_tab = dbcCol(list(
     htmlP(" "),
     htmlBr(),
     htmlBr()
-  )
-  ),
-  dbcRow(list( 
+  )),
+  dbcRow(list(
     dbcCol(list(
       htmlB(
         "Total Vaccinations",
@@ -349,13 +356,11 @@ charts_tab = dbcCol(list(
       ),
       dccLoading(
         dccGraph(
-          id="chart_1"
+          id = "chart_1"
         )
-        
       )
     ), width = 6),
     dbcCol(list(
-      
       htmlB(
         "New Vaccinations",
         list("font-size" = "25px"),
@@ -365,16 +370,12 @@ charts_tab = dbcCol(list(
       ),
       dccLoading(
         dccGraph(
-          id="chart_2"
+          id = "chart_2"
         )
       )
-      
-    ), width = 6
-    )
-    
-  )
-  ),
-  dbcRow(list( 
+    ), width = 6)
+  )),
+  dbcRow(list(
     dbcCol(list(
       htmlB(
         "Daily ICU Hospitalizations",
@@ -385,13 +386,11 @@ charts_tab = dbcCol(list(
       ),
       dccLoading(
         dccGraph(
-          id="chart_3"
+          id = "chart_3"
         )
-        
       )
     ), width = 6),
     dbcCol(list(
-      
       htmlB(
         "Daily Hospitalizations",
         list("font-size" = "25px"),
@@ -401,18 +400,12 @@ charts_tab = dbcCol(list(
       ),
       dccLoading(
         dccGraph(
-          id="chart_4"
+          id = "chart_4"
         )
       )
-      
-    ), width = 6
-    )
-    
-  )
-  )
-)
-
-)
+    ), width = 6)
+  ))
+))
 
 
 # APP codes
@@ -441,17 +434,17 @@ app$layout(
                     dbcTab(
                       map_tab,
                       label = "Global COVID-19 Map",
-                      tab_id="map_tab"
+                      tab_id = "map_tab"
                     ),
                     dbcTab(
                       line_tab,
-                      label="Global COVID-19 Plot",
-                      tab_id="line_tab"
+                      label = "Global COVID-19 Plot",
+                      tab_id = "line_tab"
                     ),
-                    dbcTab( 
+                    dbcTab(
                       charts_tab,
-                      label="Vaccination and Hospitalization Indicators",
-                      tab_id="charts_tab"
+                      label = "Vaccination and Hospitalization Indicators",
+                      tab_id = "charts_tab"
                     )
                   )
                 )
@@ -462,24 +455,88 @@ app$layout(
         )
       )
     ),
-    fluid=TRUE
+    fluid = TRUE
   )
 )
 
-#Date display callback
+# Date display callback
 app$callback(
-  output('date-display', 'children'),
-  list(input('date_slider', 'value')),
+  output("date-display", "children"),
+  list(input("date_slider", "value")),
   function(value) {
-    
     min_date_index <- value[[1]] %>% as.integer()
     max_date_index <- value[[2]] %>% as.integer()
-    
+
     template <- "Date range: "
     output_string <- paste0(template, marks[[min_date_index]], " to ", marks[[max_date_index]])
     output_string
-  }  
-  
+  }
+)
+
+# Call-back for line plots in tab 3
+app$callback(
+  list(
+    output("chart_1", "figure"),
+    output("chart_2", "figure"),
+    output("chart_3", "figure"),
+    output("chart_4", "figure")
+  ),
+  list(
+    input("country-selector", "value"),
+    input("scale-line-radio", "value"),
+    input("date_slider", "value")
+  ),
+  function(countries, scale_type, daterange) {
+    min_date_index <- daterange[[1]] %>% as.integer()
+    min_date <- marks[[min_date_index]] %>% as.integer()
+    max_date_index <- daterange[[2]] %>% as.integer()
+    max_date <- marks[[max_date_index]] %>% as.integer()    
+    filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
+
+    chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
+      geom_line(stat = "summary", fun = mean) +
+      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(labels = scales::label_number_si()) +
+      ggthemes::scale_color_tableau() +
+      labs(y = "People fully vaccinated")
+    # theme_bw()
+
+
+    chart_1 <- ggplotly(chart_1)
+    
+    filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
+    
+    
+    chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
+      geom_line(stat = "summary", fun = mean) +
+      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(labels = scales::label_number_si()) +
+      ggthemes::scale_color_tableau() +
+      labs(y = "People newly vaccinated")
+    # theme_bw()
+    
+    chart_2 <- ggplotly(chart_2)
+    
+    chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
+      geom_line(stat = "summary", fun = mean) +
+      scale_y_continuous(trans = scale_type) +
+      ggthemes::scale_color_tableau() +
+      labs(y = "ICU patients per million")
+    # theme_bw()
+    
+    chart_3 <- ggplotly(chart_3)
+    
+    chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
+      geom_line(stat = "summary", fun = mean) +
+      scale_y_continuous(trans = scale_type) +
+      ggthemes::scale_color_tableau() +
+      labs(y = "Hospitalized patients per million")
+    # theme_bw()
+    
+    chart_4 <- ggplotly(chart_4)
+
+    list(chart_1, chart_2, chart_3, chart_4)
+  }
 )
 
 #Map call-back
@@ -489,26 +546,26 @@ app$callback(
        input('country-selector', 'value'),
        input('date_slider', 'value')),
   function(xcol, countries, daterange) {
-    
+
     max_date_index <- daterange[[2]] %>% as.integer()
     max_date <- marks[[max_date_index]] %>% as.integer()
     filter_df <- filter_data(df, date_from = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
+                                             "Location: ", location, '<br>'
     ))
-    
+
     map_plot <- plot_geo(filter_df)
-    
+
     map_plot <- map_plot %>%
       add_trace(
-        z = as.formula(paste0("~`", xcol, "`")), text = ~hover, 
+        z = as.formula(paste0("~`", xcol, "`")), text = ~hover,
         locations = ~iso_code,
         color = as.formula(paste0("~`", xcol, "`")), colors = 'Purples'
       )
-    
-    map_plot <- map_plot %>% colorbar(title = "Count")  %>% 
+
+    map_plot <- map_plot %>% colorbar(title = "Count")  %>%
       ggplotly(map_plot)
-    
+
   }
 )
 
@@ -519,7 +576,7 @@ app$callback(
        input('country-selector', 'value'),
        input('scale-line-radio2', 'value'),
        input('date_slider', 'value')),
-  
+
   function(ycol, countries, scale_type, daterange) {
     min_date_index <- daterange[[1]] %>% as.integer()
     min_date <- marks[[min_date_index]] %>% as.integer()
@@ -529,9 +586,7 @@ app$callback(
                              date_from = min_date,
                              date_to = max_date,
                              countries=countries)
-    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
-    ))
+
     line_plot <- ggplot(filter_df,
                         aes(x = date,
                             y = !!sym(ycol),
@@ -539,139 +594,147 @@ app$callback(
       geom_line(stat = 'summary', fun = mean) +
       ggtitle(paste0("Country data for ", ycol)) +
       scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si()) 
-    
+      scale_y_continuous(labels = scales::label_number_si())
+
     line_plot <- line_plot %>%
       ggplotly()
   }
 )
 
-#Chart1 call-back
-app$callback(
-  output('chart_1', 'figure'),
-  list(input('country-selector', 'value'), 
-       input('scale-line-radio', 'value'),
-       input('date_slider', 'value')),
-  
-  function(countries, scale_type, daterange) {
-    min_date_index <- daterange[[1]] %>% as.integer()
-    min_date <- marks[[min_date_index]] %>% as.integer()
-    max_date_index <- daterange[[2]] %>% as.integer()
-    max_date <- marks[[max_date_index]] %>% as.integer()
-    
-    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
-    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
-    ))
-    
-    
-    chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
-      geom_line(stat = 'summary', fun = mean) +
-      scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si()) + 
-      ggthemes::scale_color_tableau() +
-      labs(y = 'People fully vaccinated')
-      #theme_bw()
+# Chart1 call-back
+# app$callback(
+#   output("chart_1", "figure"),
+#   list(
+#     input("country-selector", "value"),
+#     input("scale-line-radio", "value"),
+#     input("date_slider", "value")
+#   ),
+#   function(countries, scale_type, daterange) {
+#     min_date_index <- daterange[[1]] %>% as.integer()
+#     min_date <- marks[[min_date_index]] %>% as.integer()
+#     max_date_index <- daterange[[2]] %>% as.integer()
+#     max_date <- marks[[max_date_index]] %>% as.integer()
+# 
+#     filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
+#     filter_df$hover <- with(filter_df, paste(
+#       " Date:", date, "<br>",
+#       "Location: ", location, "<br>"
+#     ))
+# 
+# 
+#     chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
+#       geom_line(stat = "summary", fun = mean) +
+#       scale_y_continuous(trans = scale_type) +
+#       scale_y_continuous(labels = scales::label_number_si()) +
+#       ggthemes::scale_color_tableau() +
+#       labs(y = "People fully vaccinated")
+#     # theme_bw()
+# 
+# 
+#     chart_1 <- ggplotly(chart_1)
+#   }
+# )
 
-    
-    chart_1 <- ggplotly(chart_1)
-  }
-)
-
-#Chart2 call-back
-app$callback(
-  output('chart_2', 'figure'),
-  list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value'),
-       input('date_slider', 'value')),
-  
-  function(countries, scale_type, daterange) {
-    min_date_index <- daterange[[1]] %>% as.integer()
-    min_date <- marks[[min_date_index]] %>% as.integer()
-    max_date_index <- daterange[[2]] %>% as.integer()
-    max_date <- marks[[max_date_index]] %>% as.integer()
-    
-    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
-    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
-    ))
-    
-    #filter_df$rolling_new_vac<-ave(filter_df$new_vaccinations,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
-    
-    filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
-    
-    
-    chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
-      geom_line(stat = 'summary', fun = mean) +
-      scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si()) + 
-      ggthemes::scale_color_tableau() +
-      labs(y = 'People newly vaccinated')
-      #theme_bw()
-    
-    chart_2 <- ggplotly(chart_2)
-  }
-)
+# Chart2 call-back
+# app$callback(
+#   output("chart_2", "figure"),
+#   list(
+#     input("country-selector", "value"),
+#     input("scale-line-radio", "value"),
+#     input("date_slider", "value")
+#   ),
+#   function(countries, scale_type, daterange) {
+#     min_date_index <- daterange[[1]] %>% as.integer()
+#     min_date <- marks[[min_date_index]] %>% as.integer()
+#     max_date_index <- daterange[[2]] %>% as.integer()
+#     max_date <- marks[[max_date_index]] %>% as.integer()
+# 
+#     filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
+#     filter_df$hover <- with(filter_df, paste(
+#       " Date:", date, "<br>",
+#       "Location: ", location, "<br>"
+#     ))
+# 
+#     # filter_df$rolling_new_vac<-ave(filter_df$new_vaccinations,rep(1:(nrow(filter_df)/2),each=2),FUN=function(x){mean(x)})
+# 
+#     filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
+# 
+# 
+#     chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
+#       geom_line(stat = "summary", fun = mean) +
+#       scale_y_continuous(trans = scale_type) +
+#       scale_y_continuous(labels = scales::label_number_si()) +
+#       ggthemes::scale_color_tableau() +
+#       labs(y = "People newly vaccinated")
+#     # theme_bw()
+# 
+#     chart_2 <- ggplotly(chart_2)
+#   }
+# )
 
 
-#Chart3 call-back
-app$callback(
-  output('chart_3', 'figure'),
-  list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value'),
-       input('date_slider', 'value')),
-  
-  function(countries, scale_type, daterange) {
-    min_date_index <- daterange[[1]] %>% as.integer()
-    min_date <- marks[[min_date_index]] %>% as.integer()
-    max_date_index <- daterange[[2]] %>% as.integer()
-    max_date <- marks[[max_date_index]] %>% as.integer()
-    
-    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
-    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
-    ))
-    
-    
-    chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
-      geom_line(stat = 'summary', fun = mean) +
-      scale_y_continuous(trans = scale_type) +
-      ggthemes::scale_color_tableau() +
-      labs(y = 'ICU patients per million')
-      #theme_bw()
-    
-    chart_3 <- ggplotly(chart_3)
-  }
-)
+# Chart3 call-back
+# app$callback(
+#   output("chart_3", "figure"),
+#   list(
+#     input("country-selector", "value"),
+#     input("scale-line-radio", "value"),
+#     input("date_slider", "value")
+#   ),
+#   function(countries, scale_type, daterange) {
+#     min_date_index <- daterange[[1]] %>% as.integer()
+#     min_date <- marks[[min_date_index]] %>% as.integer()
+#     max_date_index <- daterange[[2]] %>% as.integer()
+#     max_date <- marks[[max_date_index]] %>% as.integer()
+# 
+#     filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
+#     filter_df$hover <- with(filter_df, paste(
+#       " Date:", date, "<br>",
+#       "Location: ", location, "<br>"
+#     ))
+# 
+# 
+#     chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
+#       geom_line(stat = "summary", fun = mean) +
+#       scale_y_continuous(trans = scale_type) +
+#       ggthemes::scale_color_tableau() +
+#       labs(y = "ICU patients per million")
+#     # theme_bw()
+# 
+#     chart_3 <- ggplotly(chart_3)
+#   }
+# )
 
-#Chart4 call-back
-app$callback(
-  output('chart_4', 'figure'),
-  list(input('country-selector', 'value'),
-       input('scale-line-radio', 'value'),
-       input('date_slider', 'value')),
-  
-  function(countries, scale_type, daterange) {
-    min_date_index <- daterange[[1]] %>% as.integer()
-    min_date <- marks[[min_date_index]] %>% as.integer()
-    max_date_index <- daterange[[2]] %>% as.integer()
-    max_date <- marks[[max_date_index]] %>% as.integer()
-    
-    filter_df <- filter_data(df, date_from =  min_date, date_to = max_date, countries=countries)
-    filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
-                                             "Location: ", location, '<br>' 
-    ))
-    
-    chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
-      geom_line(stat = 'summary', fun = mean) +
-      scale_y_continuous(trans = scale_type) +
-      ggthemes::scale_color_tableau() +
-      labs(y = 'Hospitalized patients per million')
-      #theme_bw()
-    
-    chart_4 <- ggplotly(chart_4)
-  }
-)
+# Chart4 call-back
+# app$callback(
+#   output("chart_4", "figure"),
+#   list(
+#     input("country-selector", "value"),
+#     input("scale-line-radio", "value"),
+#     input("date_slider", "value")
+#   ),
+#   function(countries, scale_type, daterange) {
+#     min_date_index <- daterange[[1]] %>% as.integer()
+#     min_date <- marks[[min_date_index]] %>% as.integer()
+#     max_date_index <- daterange[[2]] %>% as.integer()
+#     max_date <- marks[[max_date_index]] %>% as.integer()
+# 
+#     filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
+#     filter_df$hover <- with(filter_df, paste(
+#       " Date:", date, "<br>",
+#       "Location: ", location, "<br>"
+#     ))
+# 
+#     chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
+#       geom_line(stat = "summary", fun = mean) +
+#       scale_y_continuous(trans = scale_type) +
+#       ggthemes::scale_color_tableau() +
+#       labs(y = "Hospitalized patients per million")
+#     # theme_bw()
+# 
+#     chart_4 <- ggplotly(chart_4)
+#   }
+# )
 
 
 app$run_server(host = "0.0.0.0")
