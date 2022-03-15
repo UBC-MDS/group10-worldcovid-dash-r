@@ -495,8 +495,8 @@ app$callback(
 
     chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
+      #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "People fully vaccinated")
     # theme_bw()
@@ -509,8 +509,8 @@ app$callback(
     
     chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
+      #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "People newly vaccinated")
     # theme_bw()
@@ -519,6 +519,7 @@ app$callback(
     
     chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
+      #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
       ggthemes::scale_color_tableau() +
       labs(y = "ICU patients per million")
@@ -528,10 +529,11 @@ app$callback(
     
     chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
+      #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
       ggthemes::scale_color_tableau() +
       labs(y = "Hospitalized patients per million")
-    # theme_bw()
+      #theme_bw()
     
     chart_4 <- ggplotly(chart_4)
 
@@ -593,8 +595,11 @@ app$callback(
                             color = location)) +
       geom_line(stat = 'summary', fun = mean) +
       ggtitle(paste0("Country data for ", ycol)) +
+      #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si())
+      #scale_y_log10() +
+      ggthemes::scale_color_tableau() + 
+      labs(y = "")
 
     line_plot <- line_plot %>%
       ggplotly()
