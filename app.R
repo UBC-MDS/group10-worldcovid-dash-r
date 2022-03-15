@@ -99,6 +99,7 @@ filter_data <- function(df, date_from, date_to, countries) {
 }
 
 df <- get_data()
+df <- filter_data(df, date_from='2021-01-01')
 
 
 # Feature dropdown functions
