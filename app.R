@@ -377,11 +377,11 @@ charts_tab = dbcCol(list(
   dbcRow(list( 
     dbcCol(list(
       htmlB(
-        "Current ICU Hospitalizations",
+        "Daily ICU Hospitalizations",
         list("font-size" = "25px")
       ),
       htmlP(
-        "Shows the current number of people per million admitted to the ICU for the selected countries, over the date range selected by the slider above."
+        "Shows the daily number of people per million admitted to the ICU for the selected countries, over the date range selected by the slider above."
       ),
       dccLoading(
         dccGraph(
@@ -393,11 +393,11 @@ charts_tab = dbcCol(list(
     dbcCol(list(
       
       htmlB(
-        "Current Hospitalizations",
+        "Daily Hospitalizations",
         list("font-size" = "25px"),
       ),
       htmlP(
-        "Shows the current number of people per million admitted to the hospital for the selected countries, over the date range selected by the slider above."
+        "Shows the daily number of people per million admitted to the hospital for the selected countries, over the date range selected by the slider above."
       ),
       dccLoading(
         dccGraph(
