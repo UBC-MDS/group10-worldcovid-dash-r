@@ -4,10 +4,6 @@
 
 Thank you for visitng the World COVID-19 Dashboard app project repository. Link to our app here: [World COVID-19 Dashboard-R](https://worldcovid-dashr.herokuapp.com/)
 
-### Run the app locally
-
-Coming soon!
-
 ## The Problem
 
 - The COVID-19 pandemic has greatly impacted the lives of all people.
