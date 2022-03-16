@@ -20,7 +20,7 @@ library(lubridate)
 #' get_data()
 get_data <- function() {
   url <- "https://covid.ourworldindata.org/data/owid-covid-data.csv"
-
+  
   tryCatch(
     {
       df <- read_csv(url)
@@ -29,7 +29,7 @@ get_data <- function() {
       stop("The link to the data is broken.")
     }
   )
-
+  
   columns <- c(
     "iso_code",
     "continent",
@@ -57,11 +57,11 @@ get_data <- function() {
     "new_vaccinations",
     "population"
   )
-
+  
   df <- df %>% select(all_of(columns))
   df <- filter(df, !str_detect(iso_code, "^OWID"))
   df <- df %>% replace(is.na(.), 0)
-
+  
   df
 }
 
@@ -82,19 +82,19 @@ filter_data <- function(df, date_from, date_to, countries) {
   if (missing(date_from)) {
     date_from <- df$date %>% min()
   }
-
+  
   if (missing(date_to)) {
     date_to <- df$date %>% max()
   }
-
+  
   df <- df %>%
     filter(date >= date_from, date <= date_to)
-
+  
   if (!missing(countries)) {
     df <- df %>%
       filter(location %in% countries)
   }
-
+  
   df
 }
 
@@ -273,7 +273,7 @@ map_tab <- dbcRow(
       style = list("font-size" = "25px")
     ),
     htmlP(
-      "The map below depicts the selected COVID-19 indicator for the selected countries. Use the play button to animate the timeline of this indicator over the date range selected by the slider above.",
+      "The map below depicts the selected COVID-19 indicator for the selected countries. Displays data as at the most recent date selected by the date slider above.",
     ),
     htmlB("Indicator:"),
     htmlP(
@@ -315,7 +315,20 @@ line_tab <- dbcRow(
     dbcCol(
       list(
         htmlP(" ", ),
-        htmlB("Data Scale"),
+        htmlB(
+          span("Data Scale",
+               id = "tooltip-target",
+               style = list(textDecoration = "underline",
+                            cursor = "pointer")
+          ),
+        ),
+        dbcTooltip(
+          htmlP(list(
+            "Use these buttons to change the data scale. ",
+            "Linear: shows the absolute change in value over time. ",
+            "Log: shows the relative change in value over time.")),
+          target = "tooltip-target"
+        ),
         scale_line_radio2
       ),
       width = 1,
@@ -421,7 +434,18 @@ app$layout(
             dbcRow(
               list(
                 htmlP(" "),
-                htmlB(id = "date-display"),
+                htmlB(
+                  span("Date Slider",
+                       id = "tooltip-target2",
+                       style = list(textDecoration = "underline",
+                                    cursor = "pointer")
+                  ),
+                ),
+                dbcTooltip(
+                  htmlP("Use this slider to adjust the timeline of the all the visualizations. The dates displayed below, are the boundaries of the timeline."),
+                  target = "tooltip-target2"
+                ),
+                htmlP(id = "date-display"),
                 htmlBr(),
                 htmlBr(),
                 htmlP(" "),
@@ -466,7 +490,7 @@ app$callback(
   function(value) {
     min_date_index <- value[[1]] %>% as.integer()
     max_date_index <- value[[2]] %>% as.integer()
-
+    
     template <- "Date range: "
     output_string <- paste0(template, marks[[min_date_index]], " to ", marks[[max_date_index]])
     output_string
@@ -492,7 +516,7 @@ app$callback(
     max_date_index <- daterange[[2]] %>% as.integer()
     max_date <- marks[[max_date_index]] %>% as.integer()    
     filter_df <- filter_data(df, date_from = min_date, date_to = max_date, countries = countries)
-
+    
     chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
       scale_y_continuous(trans = scale_type) +
@@ -500,8 +524,8 @@ app$callback(
       ggthemes::scale_color_tableau() +
       labs(y = "People fully vaccinated")
     # theme_bw()
-
-
+    
+    
     chart_1 <- ggplotly(chart_1)
     
     filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
@@ -534,7 +558,7 @@ app$callback(
     # theme_bw()
     
     chart_4 <- ggplotly(chart_4)
-
+    
     list(chart_1, chart_2, chart_3, chart_4)
   }
 )
@@ -546,26 +570,26 @@ app$callback(
        input('country-selector', 'value'),
        input('date_slider', 'value')),
   function(xcol, countries, daterange) {
-
+    
     max_date_index <- daterange[[2]] %>% as.integer()
     max_date <- marks[[max_date_index]] %>% as.integer()
     filter_df <- filter_data(df, date_from = max_date, countries=countries)
     filter_df$hover <- with(filter_df, paste(" Date:", date, '<br>',
                                              "Location: ", location, '<br>'
     ))
-
+    
     map_plot <- plot_geo(filter_df)
-
+    
     map_plot <- map_plot %>%
       add_trace(
         z = as.formula(paste0("~`", xcol, "`")), text = ~hover,
         locations = ~iso_code,
         color = as.formula(paste0("~`", xcol, "`")), colors = 'Purples'
       )
-
+    
     map_plot <- map_plot %>% colorbar(title = "Count")  %>%
       ggplotly(map_plot)
-
+    
   }
 )
 
@@ -576,7 +600,7 @@ app$callback(
        input('country-selector', 'value'),
        input('scale-line-radio2', 'value'),
        input('date_slider', 'value')),
-
+  
   function(ycol, countries, scale_type, daterange) {
     min_date_index <- daterange[[1]] %>% as.integer()
     min_date <- marks[[min_date_index]] %>% as.integer()
@@ -586,7 +610,7 @@ app$callback(
                              date_from = min_date,
                              date_to = max_date,
                              countries=countries)
-
+    
     line_plot <- ggplot(filter_df,
                         aes(x = date,
                             y = !!sym(ycol),
@@ -595,7 +619,7 @@ app$callback(
       ggtitle(paste0("Country data for ", ycol)) +
       scale_y_continuous(trans = scale_type) +
       scale_y_continuous(labels = scales::label_number_si())
-
+    
     line_plot <- line_plot %>%
       ggplotly()
   }
