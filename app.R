@@ -522,7 +522,7 @@ app$callback(
       scale_y_continuous(trans = scale_type) +
       scale_y_continuous(labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
-      labs(y = "People fully vaccinated")
+      labs(y = "People fully vaccinated", color='Country')
     # theme_bw()
     
     
@@ -536,7 +536,7 @@ app$callback(
       scale_y_continuous(trans = scale_type) +
       scale_y_continuous(labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
-      labs(y = "People newly vaccinated")
+      labs(y = "People newly vaccinated", color='Country')
     # theme_bw()
     
     chart_2 <- ggplotly(chart_2)
@@ -545,7 +545,7 @@ app$callback(
       geom_line(stat = "summary", fun = mean) +
       scale_y_continuous(trans = scale_type) +
       ggthemes::scale_color_tableau() +
-      labs(y = "ICU patients per million")
+      labs(y = "ICU patients per million", color='Country')
     # theme_bw()
     
     chart_3 <- ggplotly(chart_3)
@@ -554,7 +554,7 @@ app$callback(
       geom_line(stat = "summary", fun = mean) +
       scale_y_continuous(trans = scale_type) +
       ggthemes::scale_color_tableau() +
-      labs(y = "Hospitalized patients per million")
+      labs(y = "Hospitalized patients per million", color='Country')
     # theme_bw()
     
     chart_4 <- ggplotly(chart_4)
@@ -618,7 +618,8 @@ app$callback(
       geom_line(stat = 'summary', fun = mean) +
       ggtitle(paste0("Country data for ", ycol)) +
       scale_y_continuous(trans = scale_type) +
-      scale_y_continuous(labels = scales::label_number_si())
+      scale_y_continuous(labels = scales::label_number_si()) +
+      labs(color='Country')
     
     line_plot <- line_plot %>%
       ggplotly()
