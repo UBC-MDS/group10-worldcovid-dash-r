@@ -359,10 +359,9 @@ line_tab <- dbcRow(
         htmlB(
           list(
           "Data Scale ",
-          span("(?)",
+          htmlSpan("(?)",
                id = "tooltip-target",
-               style = list(textDecoration = "underline",
-                            cursor = "pointer")
+               style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
           )
           )
         ),
@@ -491,10 +490,9 @@ app$layout(
                 htmlB(
                   list(
                   "Date Slider ",
-                  span("(?)",
+                  htmlSpan("(?)",
                        id = "tooltip-target2",
-                       style = list(textDecoration = "underline",
-                                    cursor = "pointer")
+                       style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
                   )
                   )
                 ),
