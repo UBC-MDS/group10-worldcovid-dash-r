@@ -2,7 +2,7 @@
 
 ## Welcome :microbe: :earth_asia:
 
-Thank you for visitng the World COVID-19 Dashboard app project repository. Link to our app here: [World COVID-19 Dashboard-R](https://worldcovid-dashr.herokuapp.com/)
+Thank you for visiting the World COVID-19 Dashboard app project repository. Link to our app here: [World COVID-19 Dashboard-R](https://worldcovid-dashr.herokuapp.com/)
 
 ## The Problem
 
