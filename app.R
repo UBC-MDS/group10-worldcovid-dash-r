@@ -243,7 +243,7 @@ sidebar <- dbcCol(dbcRow(
     htmlBr(),
     htmlP(
       "Explore the global situation of COVID-19 using this interactive dashboard. Compare selected countries and indicators across different date ranges and data scales to observe the effect of policy, and vaccination rate.",
-      style = list("text-align" = "justify")
+      style = list("text-align" = "left")
     ),
     htmlHr(),
     htmlBr(),
