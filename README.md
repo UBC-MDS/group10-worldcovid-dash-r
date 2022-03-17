@@ -38,7 +38,7 @@ Our app consists of three main tabs: Global COVID-19 Map, Global COVID-19 Plot, 
 ## Usage
 - Per the GIF below, our app is meant to be highly filterable and interactive and can be used multiple ways to suit the data needs of policy makers, public health communicators, and regular folks alike in the best way they see fit for the impacts they want to understand or the message they want to convey.
 
-Coming Soon!
+![](docs/images/Usage.gif)
 
 ## The Data
 
