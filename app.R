@@ -8,6 +8,7 @@ library(readr)
 library(stringr)
 library(RcppRoll)
 library(lubridate)
+library(data.table)
 
 #' Get COVID-19 data as data frame
 #'
@@ -60,6 +61,7 @@ get_data <- function() {
   
   df <- df %>% select(all_of(columns))
   df <- filter(df, !str_detect(iso_code, "^OWID"))
+  df <- setnafill(df, type = "locf", cols = "people_fully_vaccinated")
   df <- df %>% replace(is.na(.), 0)
   
   df
@@ -248,7 +250,20 @@ sidebar <- dbcCol(dbcRow(
     htmlHr(),
     htmlBr(),
     htmlBr(),
-    htmlB("Country Filter"),
+    htmlB(
+      list(
+        "Country Filter ",
+        htmlSpan(
+          "(?)",
+          id="tooltip-target-country",
+          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
+        )
+      )
+    ),
+    dbcTooltip(
+      "Use this filter to add or remove a country from the analysis. If there are no countries selected, it returns data for all countries",
+      target="tooltip-target-country",
+    ),    
     htmlP(
       "Use this filter to add or remove a country from the analysis",
     ),
@@ -275,10 +290,20 @@ map_tab <- dbcRow(
     htmlP(
       "The map below depicts the selected COVID-19 indicator for the selected countries. Displays data as at the most recent date selected by the date slider above.",
     ),
-    htmlB("Indicator:"),
-    htmlP(
-      "Select an indicator to explore on the map and line plot using the dropdown below."
+    htmlB(
+      list(
+        "Indicator ",
+        htmlSpan(
+          "(?)",
+          id="tooltip-target_3",
+          style=list("textDecoration" = "underline", "cursor" = "pointer","font-size" = "10px", "vertical-align" ="top"),
+        )
+      )
     ),
+    dbcTooltip(
+      "Select an indicator to explore on the map and line plot using the dropdown below.",
+      target="tooltip-target_3",
+    ),    
     htmlBr(),
     htmlBr(),
     feature_dropdown,
@@ -302,9 +327,19 @@ line_tab <- dbcRow(
     htmlP(
       "The line plot below depicts the selected COVID-19 indicator for the selected countries, over the date range selected by the slider above. Click the legend to highlight particular countries.",
     ),
-    htmlB("Indicator:"),
-    htmlP(
+    htmlB(
+      list(
+        "Indicator ",
+        htmlSpan(
+          "(?)",
+          id="tooltip-target_4",
+          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"),
+        )
+      )
+    ),
+    dbcTooltip(
       "Select an indicator to explore on the map and line plot using the dropdown below.",
+      target="tooltip-target_4",
     ),
     htmlBr(),
     htmlBr(),
@@ -316,12 +351,14 @@ line_tab <- dbcRow(
       list(
         htmlP(" ", ),
         htmlB(
-          "Data Scale",
+          list(
+          "Data Scale ",
           span("(?)",
                id = "tooltip-target",
                style = list(textDecoration = "underline",
                             cursor = "pointer")
-          ),
+          )
+          )
         ),
         dbcTooltip(
           htmlP(list(
@@ -353,6 +390,20 @@ charts_tab <- dbcCol(list(
     htmlP(
       "Use the radio buttons below to change the data in the visualizations to a linear or log scale."
     ),
+    htmlB(
+      list(
+        "Data Scale ",
+        htmlSpan(
+          "(?)",
+          id="tooltip-target-line",
+          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
+        )
+    )
+    ),
+    dbcTooltip(
+      "Use these buttons to change the data scale. Linear: shows the absolute change in value over time. Log: shows the relative change in value over time.",
+      target="tooltip-target-line",
+    ),    
     htmlBr(),
     scale_line_radio,
     htmlP(" "),
@@ -436,12 +487,14 @@ app$layout(
               list(
                 htmlP(" "),
                 htmlB(
-                  "Date Slider",
+                  list(
+                  "Date Slider ",
                   span("(?)",
                        id = "tooltip-target2",
                        style = list(textDecoration = "underline",
                                     cursor = "pointer")
-                  ),
+                  )
+                  )
                 ),
                 dbcTooltip(
                   htmlP("Use this slider to adjust the date range of the visualizations. The dates displayed below, are the boundaries of the timeline."),
@@ -522,7 +575,7 @@ app$callback(
     chart_1 <- ggplot(filter_df, aes(y = people_fully_vaccinated, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
       #scale_y_continuous(labels = scales::label_number_si()) +
-      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(trans = scale_type, labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "People fully vaccinated", color='Country')
     # theme_bw()
@@ -536,7 +589,7 @@ app$callback(
     chart_2 <- ggplot(filter_df, aes(y = rolling_new_vac, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
       #scale_y_continuous(labels = scales::label_number_si()) +
-      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(trans = scale_type, labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "People newly vaccinated", color='Country')
     # theme_bw()
@@ -546,7 +599,7 @@ app$callback(
     chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
       #scale_y_continuous(labels = scales::label_number_si()) +
-      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(trans = scale_type, labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "ICU patients per million", color='Country')
     # theme_bw()
@@ -556,7 +609,7 @@ app$callback(
     chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
       #scale_y_continuous(labels = scales::label_number_si()) +
-      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(trans = scale_type, labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() +
       labs(y = "Hospitalized patients per million", color='Country')
     # theme_bw()
