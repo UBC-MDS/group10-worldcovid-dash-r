@@ -91,10 +91,16 @@ filter_data <- function(df, date_from, date_to, countries) {
   
   df <- df %>%
     filter(date >= date_from, date <= date_to)
-  
+
   if (!missing(countries)) {
+    if (length(countries) > 0) {
     df <- df %>%
       filter(location %in% countries)
+    }
+    else {
+      df <- df %>%
+        filter(location == "Canada")
+    }
   }
   
   df
@@ -261,7 +267,7 @@ sidebar <- dbcCol(dbcRow(
       )
     ),
     dbcTooltip(
-      "Use this filter to add or remove a country from the analysis. If there are no countries selected, it returns data for all countries",
+      "Use this filter to add or remove a country from the analysis. If there are no countries selected, it returns data for Canada only",
       target="tooltip-target-country",
     ),    
     htmlP(
@@ -386,10 +392,6 @@ line_tab <- dbcRow(
 charts_tab <- dbcCol(list(
   dbcRow(list(
     htmlP(" "),
-    htmlB("Data Scale:"),
-    htmlP(
-      "Use the radio buttons below to change the data in the visualizations to a linear or log scale."
-    ),
     htmlB(
       list(
         "Data Scale ",
