@@ -675,7 +675,7 @@ app$callback(
       geom_line(stat = 'summary', fun = mean) +
       #ggtitle(paste0("Country data for ", ycol)) +
       #scale_y_continuous(labels = scales::label_number_si()) +
-      scale_y_continuous(trans = scale_type) +
+      scale_y_continuous(trans = scale_type, labels = scales::label_number_si()) +
       ggthemes::scale_color_tableau() + 
       labs(color='Country', y='')
     
