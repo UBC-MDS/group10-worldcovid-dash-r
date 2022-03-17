@@ -620,13 +620,11 @@ app$callback(
                             y = !!sym(ycol),
                             color = location)) +
       geom_line(stat = 'summary', fun = mean) +
-      ggtitle(paste0("Country data for ", ycol)) +
+      #ggtitle(paste0("Country data for ", ycol)) +
       #scale_y_continuous(labels = scales::label_number_si()) +
       scale_y_continuous(trans = scale_type) +
-      #scale_y_log10() +
       ggthemes::scale_color_tableau() + 
-      scale_y_continuous(labels = scales::label_number_si()) +
-      labs(color='Country')
+      labs(color='Country', y='')
     
     line_plot <- line_plot %>%
       ggplotly()
