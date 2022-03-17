@@ -476,6 +476,7 @@ charts_tab <- dbcCol(list(
 
 # APP codes
 app <- Dash$new(external_stylesheets = dbcThemes$FLATLY)
+app$title("World COVID-19 Dashboard")
 
 app$layout(
   dbcContainer(
@@ -581,7 +582,8 @@ app$callback(
     # theme_bw()
     
     
-    chart_1 <- ggplotly(chart_1)
+    chart_1 <- ggplotly(chart_1) %>%
+      partial_bundle()
     
     filter_df$rolling_new_vac <- roll_mean(filter_df$new_vaccinations, n = 5, align = "right", fill = NA)
     
@@ -594,7 +596,8 @@ app$callback(
       labs(y = "People newly vaccinated", color='Country')
     # theme_bw()
     
-    chart_2 <- ggplotly(chart_2)
+    chart_2 <- ggplotly(chart_2) %>%
+      partial_bundle()
     
     chart_3 <- ggplot(filter_df, aes(y = icu_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
@@ -604,7 +607,8 @@ app$callback(
       labs(y = "ICU patients per million", color='Country')
     # theme_bw()
     
-    chart_3 <- ggplotly(chart_3)
+    chart_3 <- ggplotly(chart_3) %>%
+      partial_bundle()
     
     chart_4 <- ggplot(filter_df, aes(y = hosp_patients_per_million, x = date, color = location)) +
       geom_line(stat = "summary", fun = mean) +
@@ -614,7 +618,8 @@ app$callback(
       labs(y = "Hospitalized patients per million", color='Country')
     # theme_bw()
     
-    chart_4 <- ggplotly(chart_4)
+    chart_4 <- ggplotly(chart_4) %>%
+      partial_bundle()
     
     list(chart_1, chart_2, chart_3, chart_4)
   }
