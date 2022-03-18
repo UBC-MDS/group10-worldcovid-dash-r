@@ -715,7 +715,7 @@ app$callback(
       add_trace(
         z = as.formula(paste0("~`", xcol, "`")), text = ~hover,
         locations = ~iso_code,
-        color = as.formula(paste0("~`", xcol, "`")), colors = 'Purples'
+        color = as.formula(paste0("~`", xcol, "`")), colors = 'Blues'
       )
     
     map_plot <- map_plot %>% colorbar(title = "Count")  %>%
