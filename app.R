@@ -222,16 +222,15 @@ marks_display[last_index_char] <- list(
     "style" = list("color" = "#77b0b1")
   )
 )
-
 date_slider <- dccRangeSlider(
   id = "date_slider",
   min = daterange[1],
   max = daterange[length(daterange)],
   value = list(
-    daterange[1],
-    daterange[length(daterange)]
+    daterange[length(daterange)-200],
+    daterange[length(daterange)-50]
   ),
-  marks = marks_display
+  marks = marks_display,
 )
 
 
