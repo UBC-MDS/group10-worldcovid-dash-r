@@ -180,7 +180,17 @@ scale_line_radio <- dbcRadioItems(
 scale_line_radio2 <- dbcRadioItems(
   id = "scale-line-radio2",
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
+  style=list("font-size" = "13px"),
   value = "identity",
+)
+
+
+# Points Selector
+points_option = dbcRadioItems(
+    options = purrr::map2(c("No", "Yes"), c(FALSE, TRUE), data_type_mapping),
+    style=list("font-size" = "13px"),
+    value="identity",
+    id="points_option"
 )
 
 # Date slider
@@ -274,7 +284,33 @@ sidebar <- dbcCol(dbcRow(
     ),
     htmlBr(),
     htmlBr(),
-    country_selector
+    country_selector,
+    htmlHr(),
+    htmlBr(),
+    htmlHr(),
+    htmlB("Data Source"),
+    htmlP(" "),
+    htmlP(
+                "The World COVID-19 Dashboard uses a colection of COVID-19 data maintained by Our World in Data",
+                style=list("text-align"= "left", "font-size"= "15px")
+    ),
+    htmlDiv(        
+        dccMarkdown(
+                    "
+                    Data source can be found [here](https://github.com/owid/covid-19-data/tree/master/public/data).
+                    "
+                    ),
+                style=list("text-align"= "left", "font-size"= "15px")
+    ),
+    htmlDiv(
+                
+        dccMarkdown(
+                    "
+                    Source code can be found [here](https://github.com/UBC-MDS/group10-worldcovid-dashpython).
+                    "
+                    ),
+                style=list("text-align"= "left", "font-size"= "15px")
+    )
   )
 ),
 width = 2,
@@ -322,68 +358,87 @@ map_tab <- dbcRow(
 )
 
 # Line tab
-line_tab <- dbcRow(
-  list(
-    htmlP(" "),
-    htmlP(
-      "Line Plot",
-      style = list("font-size" = "25px"),
-    ),
-    htmlP(
-      "The line plot below depicts the selected COVID-19 indicator for the selected countries, over the date range selected by the slider above. Click the legend to highlight particular countries.",
-    ),
-    htmlB(
-      list(
-        "Indicator ",
-        htmlSpan(
-          "(?)",
-          id="tooltip-target_4",
-          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"),
-        )
-      )
-    ),
-    dbcTooltip(
-      "Select an indicator to explore on the map and line plot using the dropdown below.",
-      target="tooltip-target_4",
-    ),
-    htmlBr(),
-    htmlBr(),
-    feature_dropdown2,
-    htmlP(
-      " ",
-    ),
-    dbcCol(
-      list(
-        htmlP(" ", ),
-        htmlB(
+line_tab <- dbcRow(list( 
+  
+  dbcRow(
+        list(
+          htmlP(" "),
+          htmlP(
+            "Line Plot",
+            style = list("font-size" = "25px"),
+          ),
+          htmlP(
+            "The line plot below depicts the selected COVID-19 indicator for the selected countries, over the date range selected by the slider above. Click the legend to highlight particular countries.",
+          ),
+          htmlB(
+            list(
+              "Indicator ",
+              htmlSpan(
+                "(?)",
+                id="tooltip-target_4",
+                style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"),
+              )
+            )
+          ),
+          dbcTooltip(
+            "Select an indicator to explore on the map and line plot using the dropdown below.",
+            target="tooltip-target_4",
+          ),
+          htmlBr(),
+          htmlBr(),
+          feature_dropdown2,
+          htmlP(
+            " "
+          )
+    )),
+    dbcRow(list(
+        dbcCol(
           list(
-          "Data Scale ",
-          htmlSpan("(?)",
-               id = "tooltip-target",
-               style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
-          )
-          )
+            #htmlP(" "),
+            htmlB(
+              list(
+              "Data Scale ",
+              htmlSpan("(?)",
+                  id = "tooltip-target",
+                  style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "8px", "vertical-align" ="top"))
+              ), style=list("font-size" = "13px")
+            ),
+            dbcTooltip(
+              htmlP(list(
+                "Use these buttons to change the data scale. ",
+                "Linear: shows the absolute change in value over time. ",
+                "Log: shows the relative change in value over time.")),
+              target = "tooltip-target"
+            ),
+            scale_line_radio2,
+            htmlB(
+                  list(
+                    "Add Points ",
+                      htmlSpan(
+                                "(?)",
+                                id="tooltip-target_2",
+                                style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "8px", "vertical-align" ="top")
+                            )
+                    ), , style=list("font-size" = "13px")
+                  ),
+              dbcTooltip(
+                  "Use these buttons to add specific data points to the plot, in addition to the rolling mean",
+                  target="tooltip-target_2"
+              ),
+              points_option
+          ),
+          width = 1,
         ),
-        dbcTooltip(
-          htmlP(list(
-            "Use these buttons to change the data scale. ",
-            "Linear: shows the absolute change in value over time. ",
-            "Log: shows the relative change in value over time.")),
-          target = "tooltip-target"
-        ),
-        scale_line_radio2
-      ),
-      width = 1,
-    ),
-    dbcCol(
-      dccLoading(
-        dccGraph(
-          id = "line-plot",
-          style = list("height" = "70vh"),
+        dbcCol(
+          dccLoading(
+            dccGraph(
+              id = "line-plot",
+              style = list("height" = "70vh"),
+            )
+          ) #, width = 8
         )
-      )
-    )
-  )
+  ))
+)
 )
 
 # Charts Tab
@@ -396,9 +451,8 @@ charts_tab <- dbcCol(list(
         htmlSpan(
           "(?)",
           id="tooltip-target-line",
-          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
-        )
-    )
+          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"))
+      )
     ),
     dbcTooltip(
       "Use these buttons to change the data scale. Linear: shows the absolute change in value over time. Log: shows the relative change in value over time.",
@@ -478,7 +532,7 @@ app <- Dash$new(external_stylesheets = dbcThemes$FLATLY)
 app$title("World COVID-19 Dashboard")
 
 app$layout(
-  dbcContainer(
+  dbcContainer( list(
     dbcRow(
       list(
         sidebar,
@@ -534,7 +588,23 @@ app$layout(
         )
       )
     ),
-    fluid = TRUE
+
+    dbcRow(
+        list(
+          dccMarkdown(
+                  "The World COVID-19 Dashboard was created and maintained by [Adam Morphy](https://github.com/adammorphy), [Kingslin Lv](https://github.com/Kingslin0810), [Kristin Bunyan](https://github.com/khbunyan), and [Thomas Siu](https://github.com/thomassiu)."
+            )
+        ),
+        style=list(
+                "height"= "60px",
+                "background-color"= "#e5e5e5",
+                "font-size"= "14px",
+                "padding-left"= "20px",
+                "padding-top"= "20px"
+          )
+      )
+
+  ), fluid = TRUE
   )
 )
 
@@ -645,7 +715,7 @@ app$callback(
       add_trace(
         z = as.formula(paste0("~`", xcol, "`")), text = ~hover,
         locations = ~iso_code,
-        color = as.formula(paste0("~`", xcol, "`")), colors = 'Purples'
+        color = as.formula(paste0("~`", xcol, "`")), colors = 'Blues'
       )
     
     map_plot <- map_plot %>% colorbar(title = "Count")  %>%
@@ -660,9 +730,10 @@ app$callback(
   list(input('feature-dropdown2', 'value'),
        input('country-selector', 'value'),
        input('scale-line-radio2', 'value'),
-       input('date_slider', 'value')),
+       input('date_slider', 'value'),
+       input("points_option", "value")),
   
-  function(ycol, countries, scale_type, daterange) {
+  function(ycol, countries, scale_type, daterange, points_option = FALSE) {
     min_date_index <- daterange[[1]] %>% as.integer()
     min_date <- marks[[min_date_index]] %>% as.integer()
     max_date_index <- daterange[[2]] %>% as.integer()
@@ -672,6 +743,8 @@ app$callback(
                              date_to = max_date,
                              countries=countries)
     
+
+
     line_plot <- ggplot(filter_df,
                         aes(x = date,
                             y = !!sym(ycol),
@@ -683,9 +756,18 @@ app$callback(
       ggthemes::scale_color_tableau() + 
       labs(color='Country', y='')
     
+
+    if(points_option == TRUE){
+      line_plot <- line_plot + geom_point(new_data = filter_df, 
+                            aes(x = date,
+                            y = !!sym(ycol),
+                            color = location))
+    }
+
+
     line_plot <- line_plot %>%
       ggplotly()
   }
 )
 
-app$run_server(host = "0.0.0.0")
+app$run_server(debug = T) # debug = T host = "0.0.0.0"
