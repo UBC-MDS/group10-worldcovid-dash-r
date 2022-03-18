@@ -183,6 +183,14 @@ scale_line_radio2 <- dbcRadioItems(
   value = "identity",
 )
 
+
+# Points Selector
+points_option = dbcRadioItems(
+    options = purrr::map2(c("No", "Yes"), c(FALSE, TRUE), data_type_mapping),
+    value="identity",
+    id="points_option"
+)
+
 # Date slider
 date_unique <- unique(df["date"]) %>% arrange(date)
 daterange <- 1:nrow(date_unique)
@@ -354,14 +362,13 @@ line_tab <- dbcRow(
     ),
     dbcCol(
       list(
-        htmlP(" ", ),
+        htmlP(" "),
         htmlB(
           list(
           "Data Scale ",
           htmlSpan("(?)",
                id = "tooltip-target",
-               style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
-          )
+               style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"))
           )
         ),
         dbcTooltip(
@@ -371,7 +378,22 @@ line_tab <- dbcRow(
             "Log: shows the relative change in value over time.")),
           target = "tooltip-target"
         ),
-        scale_line_radio2
+        scale_line_radio2,
+        htmlB(
+               list(
+                "Add Points ",
+                  htmlSpan(
+                            "(?)",
+                            id="tooltip-target_2",
+                            style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
+                        )
+                )
+              ),
+          dbcTooltip(
+              "Use these buttons to add specific data points to the plot, in addition to the rolling mean",
+              target="tooltip-target_2"
+          ),
+          points_option
       ),
       width = 1,
     ),
@@ -396,9 +418,8 @@ charts_tab <- dbcCol(list(
         htmlSpan(
           "(?)",
           id="tooltip-target-line",
-          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
-        )
-    )
+          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"))
+      )
     ),
     dbcTooltip(
       "Use these buttons to change the data scale. Linear: shows the absolute change in value over time. Log: shows the relative change in value over time.",
@@ -478,7 +499,7 @@ app <- Dash$new(external_stylesheets = dbcThemes$FLATLY)
 app$title("World COVID-19 Dashboard")
 
 app$layout(
-  dbcContainer(
+  dbcContainer( list(
     dbcRow(
       list(
         sidebar,
@@ -534,7 +555,23 @@ app$layout(
         )
       )
     ),
-    fluid = TRUE
+
+    dbcRow(
+        list(
+          dccMarkdown(
+                  "The World COVID-19 Dashboard was created and maintained by [Adam Morphy](https://github.com/adammorphy), [Kingslin Lv](https://github.com/Kingslin0810), [Kristin Bunyan](https://github.com/khbunyan), and [Thomas Siu](https://github.com/thomassiu)."
+            )
+        ),
+        style=list(
+                "height"= "60px",
+                "background-color"= "#e5e5e5",
+                "font-size"= "14px",
+                "padding-left"= "20px",
+                "padding-top"= "20px"
+          )
+      )
+
+  ), fluid = TRUE
   )
 )
 
@@ -660,9 +697,10 @@ app$callback(
   list(input('feature-dropdown2', 'value'),
        input('country-selector', 'value'),
        input('scale-line-radio2', 'value'),
-       input('date_slider', 'value')),
+       input('date_slider', 'value'),
+       input("points_option", "value")),
   
-  function(ycol, countries, scale_type, daterange) {
+  function(ycol, countries, scale_type, daterange, points_option = FALSE) {
     min_date_index <- daterange[[1]] %>% as.integer()
     min_date <- marks[[min_date_index]] %>% as.integer()
     max_date_index <- daterange[[2]] %>% as.integer()
@@ -672,6 +710,8 @@ app$callback(
                              date_to = max_date,
                              countries=countries)
     
+
+
     line_plot <- ggplot(filter_df,
                         aes(x = date,
                             y = !!sym(ycol),
@@ -683,6 +723,15 @@ app$callback(
       ggthemes::scale_color_tableau() + 
       labs(color='Country', y='')
     
+
+    if(points_option == TRUE){
+      line_plot <- line_plot + geom_point(new_data = filter_df, 
+                            aes(x = date,
+                            y = !!sym(ycol),
+                            color = location))
+    }
+
+
     line_plot <- line_plot %>%
       ggplotly()
   }
