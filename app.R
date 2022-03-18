@@ -180,6 +180,7 @@ scale_line_radio <- dbcRadioItems(
 scale_line_radio2 <- dbcRadioItems(
   id = "scale-line-radio2",
   options = purrr::map2(data_type_labels, data_type_values, data_type_mapping),
+  style=list("font-size" = "13px"),
   value = "identity",
 )
 
@@ -187,6 +188,7 @@ scale_line_radio2 <- dbcRadioItems(
 # Points Selector
 points_option = dbcRadioItems(
     options = purrr::map2(c("No", "Yes"), c(FALSE, TRUE), data_type_mapping),
+    style=list("font-size" = "13px"),
     value="identity",
     id="points_option"
 )
@@ -282,7 +284,33 @@ sidebar <- dbcCol(dbcRow(
     ),
     htmlBr(),
     htmlBr(),
-    country_selector
+    country_selector,
+    htmlHr(),
+    htmlBr(),
+    htmlHr(),
+    htmlB("Data Source"),
+    htmlP(" "),
+    htmlP(
+                "The World COVID-19 Dashboard uses a colection of COVID-19 data maintained by Our World in Data",
+                style=list("text-align"= "left", "font-size"= "15px")
+    ),
+    htmlDiv(        
+        dccMarkdown(
+                    "
+                    Data source can be found [here](https://github.com/owid/covid-19-data/tree/master/public/data).
+                    "
+                    ),
+                style=list("text-align"= "left", "font-size"= "15px")
+    ),
+    htmlDiv(
+                
+        dccMarkdown(
+                    "
+                    Source code can be found [here](https://github.com/UBC-MDS/group10-worldcovid-dashpython).
+                    "
+                    ),
+                style=list("text-align"= "left", "font-size"= "15px")
+    )
   )
 ),
 width = 2,
@@ -330,82 +358,87 @@ map_tab <- dbcRow(
 )
 
 # Line tab
-line_tab <- dbcRow(
-  list(
-    htmlP(" "),
-    htmlP(
-      "Line Plot",
-      style = list("font-size" = "25px"),
-    ),
-    htmlP(
-      "The line plot below depicts the selected COVID-19 indicator for the selected countries, over the date range selected by the slider above. Click the legend to highlight particular countries.",
-    ),
-    htmlB(
-      list(
-        "Indicator ",
-        htmlSpan(
-          "(?)",
-          id="tooltip-target_4",
-          style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"),
-        )
-      )
-    ),
-    dbcTooltip(
-      "Select an indicator to explore on the map and line plot using the dropdown below.",
-      target="tooltip-target_4",
-    ),
-    htmlBr(),
-    htmlBr(),
-    feature_dropdown2,
-    htmlP(
-      " ",
-    ),
-    dbcCol(
-      list(
-        htmlP(" "),
-        htmlB(
-          list(
-          "Data Scale ",
-          htmlSpan("(?)",
-               id = "tooltip-target",
-               style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"))
-          )
-        ),
-        dbcTooltip(
-          htmlP(list(
-            "Use these buttons to change the data scale. ",
-            "Linear: shows the absolute change in value over time. ",
-            "Log: shows the relative change in value over time.")),
-          target = "tooltip-target"
-        ),
-        scale_line_radio2,
-        htmlB(
-               list(
-                "Add Points ",
-                  htmlSpan(
-                            "(?)",
-                            id="tooltip-target_2",
-                            style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top")
-                        )
-                )
-              ),
-          dbcTooltip(
-              "Use these buttons to add specific data points to the plot, in addition to the rolling mean",
-              target="tooltip-target_2"
+line_tab <- dbcRow(list( 
+  
+  dbcRow(
+        list(
+          htmlP(" "),
+          htmlP(
+            "Line Plot",
+            style = list("font-size" = "25px"),
           ),
-          points_option
-      ),
-      width = 1,
-    ),
-    dbcCol(
-      dccLoading(
-        dccGraph(
-          id = "line-plot",
-          style = list("height" = "70vh"),
+          htmlP(
+            "The line plot below depicts the selected COVID-19 indicator for the selected countries, over the date range selected by the slider above. Click the legend to highlight particular countries.",
+          ),
+          htmlB(
+            list(
+              "Indicator ",
+              htmlSpan(
+                "(?)",
+                id="tooltip-target_4",
+                style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "10px", "vertical-align" ="top"),
+              )
+            )
+          ),
+          dbcTooltip(
+            "Select an indicator to explore on the map and line plot using the dropdown below.",
+            target="tooltip-target_4",
+          ),
+          htmlBr(),
+          htmlBr(),
+          feature_dropdown2,
+          htmlP(
+            " "
+          )
+    )),
+    dbcRow(list(
+        dbcCol(
+          list(
+            #htmlP(" "),
+            htmlB(
+              list(
+              "Data Scale ",
+              htmlSpan("(?)",
+                  id = "tooltip-target",
+                  style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "8px", "vertical-align" ="top"))
+              ), style=list("font-size" = "13px")
+            ),
+            dbcTooltip(
+              htmlP(list(
+                "Use these buttons to change the data scale. ",
+                "Linear: shows the absolute change in value over time. ",
+                "Log: shows the relative change in value over time.")),
+              target = "tooltip-target"
+            ),
+            scale_line_radio2,
+            htmlB(
+                  list(
+                    "Add Points ",
+                      htmlSpan(
+                                "(?)",
+                                id="tooltip-target_2",
+                                style=list("textDecoration" = "underline", "cursor" = "pointer", "font-size" = "8px", "vertical-align" ="top")
+                            )
+                    ), , style=list("font-size" = "13px")
+                  ),
+              dbcTooltip(
+                  "Use these buttons to add specific data points to the plot, in addition to the rolling mean",
+                  target="tooltip-target_2"
+              ),
+              points_option
+          ),
+          width = 1,
+        ),
+        dbcCol(
+          dccLoading(
+            dccGraph(
+              id = "line-plot",
+              style = list("height" = "70vh"),
+            )
+          ) #, width = 8
         )
-      )
-    )
-  )
+  ))
+)
 )
 
 # Charts Tab
@@ -737,4 +770,4 @@ app$callback(
   }
 )
 
-app$run_server(host = "0.0.0.0")
+app$run_server(debug = T) # debug = T host = "0.0.0.0"
